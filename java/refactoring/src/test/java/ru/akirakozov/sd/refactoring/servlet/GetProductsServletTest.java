@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 public class GetProductsServletTest {
 
-    GetProductsServlet getServlet = new GetProductsServlet();
+    GetProductsServlet getServlet;
 
     @Mock
     HttpServletRequest myRequest;
@@ -45,27 +45,6 @@ public class GetProductsServletTest {
             Statement stmt = c.createStatement();
             stmt.executeUpdate(sql);
 
-            String name = "apple";
-            int price = 5;
-            sql = "INSERT INTO PRODUCT " +
-                    "(NAME, PRICE) VALUES (\"" + name + "\"," + price + ")";
-            stmt = c.createStatement();
-            stmt.executeUpdate(sql);
-
-            name = "pear";
-            price = 10;
-            sql = "INSERT INTO PRODUCT " +
-                    "(NAME, PRICE) VALUES (\"" + name + "\"," + price + ")";
-            stmt = c.createStatement();
-            stmt.executeUpdate(sql);
-
-            name = "banana";
-            price = 15;
-            sql = "INSERT INTO PRODUCT " +
-                    "(NAME, PRICE) VALUES (\"" + name + "\"," + price + ")";
-            stmt = c.createStatement();
-            stmt.executeUpdate(sql);
-
             stmt.close();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -85,13 +64,30 @@ public class GetProductsServletTest {
         }
     }
 
+    private void createSimpleTable() {
+        String sql = "INSERT INTO PRODUCT (NAME, PRICE) VALUES ('apple', 5), ('pear', 10), ('banana', 15)";
+
+        try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
+            Statement s = c.createStatement();
+            s.executeUpdate(sql);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+    }
+
     @Test
     public void testGetTreeProducts() throws IOException {
         when(myResponse.getWriter()).thenReturn(new PrintWriter(myWriter));
+        createSimpleTable();
         getServlet.doGet(myRequest, myResponse);
 
         assertEquals(
                 "<html><body>\napple\t5</br>\npear\t10</br>\nbanana\t15</br>\n</body></html>\n",
                 myWriter.toString());
     }
+
+
 }
+
+
