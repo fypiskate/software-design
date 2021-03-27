@@ -58,7 +58,7 @@ public class QueryServletTest {
         makeRequest("min");
 
         assertEquals("<html><body>\n" +
-                "<h1>Product with min price: </h1>\n\n" +
+                "<h1>Product with min price: </h1>\n" +
                 "</body></html>\n", myWriter.toString());
 
     }
@@ -68,7 +68,7 @@ public class QueryServletTest {
         makeRequest("max");
 
         assertEquals("<html><body>\n" +
-                "<h1>Product with max price: </h1>\n\n" +
+                "<h1>Product with max price: </h1>\n" +
                 "</body></html>\n", myWriter.toString());
 
     }
