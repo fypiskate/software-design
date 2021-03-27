@@ -10,15 +10,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import ru.akirakozov.sd.refactoring.database.ProductsDatabase;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -36,40 +34,24 @@ public class AddProductServletTest {
     Writer myWriter;
     List<String> products;
     List<Integer> prices;
+    ProductsDatabase database;
 
     @Before
-    public void before() {
+    public void before() throws SQLException {
         MockitoAnnotations.initMocks(this);
         addServlet = new AddProductServlet();
         myWriter = new StringWriter();
         products = new ArrayList<>();
         prices = new ArrayList<>();
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
-            String sql = "CREATE TABLE IF NOT EXISTS PRODUCT" +
-                    "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                    " NAME           TEXT    NOT NULL, " +
-                    " PRICE          INT     NOT NULL)";
-            Statement stmt = c.createStatement();
 
-            stmt.executeUpdate(sql);
-            stmt.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        database = new ProductsDatabase();
+        database.createIfNotExists();
 
     }
 
     @After
     public void after() {
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
-            String sql = "DROP TABLE PRODUCT";
-            Statement stmt = c.createStatement();
-
-            stmt.executeUpdate(sql);
-            stmt.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        database.dropTable();
     }
 
 

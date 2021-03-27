@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import ru.akirakozov.sd.refactoring.database.ProductsDatabase;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,10 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -31,49 +29,27 @@ public class GetProductsServletTest {
     HttpServletResponse myResponse;
 
     Writer myWriter;
+    ProductsDatabase database;
 
     @Before
-    public void before() {
+    public void before() throws SQLException {
         MockitoAnnotations.initMocks(this);
         getServlet = new GetProductsServlet();
         myWriter = new StringWriter();
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
-            String sql = "CREATE TABLE IF NOT EXISTS PRODUCT" +
-                    "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                    " NAME           TEXT    NOT NULL, " +
-                    " PRICE          INT     NOT NULL)";
-            Statement stmt = c.createStatement();
-            stmt.executeUpdate(sql);
+        database = new ProductsDatabase();
 
-            stmt.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        database.createIfNotExists();
     }
 
     @After
     public void after() {
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
-            String sql = "DROP TABLE PRODUCT";
-            Statement stmt = c.createStatement();
-
-            stmt.executeUpdate(sql);
-            stmt.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        database.dropTable();
     }
 
     private void createSimpleTable() {
-        String sql = "INSERT INTO PRODUCT (NAME, PRICE) VALUES ('apple', 5), ('pear', 10), ('banana', 15)";
-
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
-            Statement s = c.createStatement();
-            s.executeUpdate(sql);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
+        database.insert("apple", 5);
+        database.insert("pear", 10);
+        database.insert("banana", 15);
     }
 
     @Test
